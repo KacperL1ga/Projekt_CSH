@@ -11,7 +11,8 @@ namespace BankApp
         [STAThread]
         static void Main()
         {
-            DataBaseBankSeeder.Seed(); // Inicjalizacja bazy danych przy starcie aplikacji
+            // DataBaseBankSeeer.Seed po pierwszym uruchomieniu nalezy zakomentować
+            // DataBaseBankSeeder.Seed(); // Inicjalizacja bazy danych przy starcie aplikacji
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Logowanie());
