@@ -16,8 +16,8 @@ namespace BankApp
             LoadSavingAccountData(); // Wczytanie danych konta oszczędnościowego
             this.Activated += (sender, e) => // Obsługa zdarzenia aktywacji okna
             {
-                LoadTransactionHistory(); // Wczytanie historii transakcji
-                LoadTransferHistory(); // Wczytanie historii przelewów
+                LoadTransactionHistory("", ""); // Wczytanie historii transakcji
+                LoadTransferHistory("",""); // Wczytanie historii przelewów
                 LoadSavingAccountData(); // Wczytanie danych konta oszczędnościowego
             };
         }
@@ -71,27 +71,49 @@ namespace BankApp
             }
         }
 
-        private void LoadTransactionHistory() // Metoda do wczytywania historii transakcji
+        private void LoadTransactionHistory(string amountFilter, string dateFilter) // Metoda do wczytywania historii transakcji
         {
+            amountFilter = amountFilter.Trim(); // Usunięcie białych znaków z początku i końca filtru kwoty
+            dateFilter = dateFilter.Trim(); // Usunięcie białych znaków z początku i końca filtru daty
             using (var conn = DatabaseContex.GetConnection())
             {
                 conn.Open();
                 string query = @"
-                    SELECT 
-                        a.AccountType AS 'Konto',
-                        t.Description AS 'Opis',
-                        t.Amount AS 'Kwota',
-                        t.Date AS 'Data'
-                    FROM transactions t
-                    JOIN accounts a ON t.AccountId = a.Id
-                    WHERE a.UserId = @id
-                    ORDER BY t.Date DESC"; // Zapytanie SQL do bazy o historię transakcji
+                        SELECT 
+                            a.AccountType AS 'Konto',
+                            t.Description AS 'Opis',
+                            t.Amount AS 'Kwota',
+                            t.Date AS 'Data'
+                        FROM transactions t
+                        JOIN accounts a ON t.AccountId = a.Id
+                        WHERE a.UserId = @id";
+
+                if (!string.IsNullOrEmpty(amountFilter))
+                {
+                    query += " AND t.Amount = @amount";
+                }
+                if (!string.IsNullOrEmpty(dateFilter))
+                {
+                    query += " AND DATE(t.Date) = @date";
+                }
+
+                query += " ORDER BY t.Date DESC";
 
                 using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", _id); // Dodawanie parametru do zapytania
+                    cmd.Parameters.AddWithValue("@id", _id);
+
+                    if (!string.IsNullOrEmpty(amountFilter))
+                    {
+                        cmd.Parameters.AddWithValue("@amount", decimal.Parse(amountFilter));
+                    }
+                    if (!string.IsNullOrEmpty(dateFilter))
+                    {
+                        cmd.Parameters.AddWithValue("@date", dateFilter);
+                    }
+
                     var adapter = new MySql.Data.MySqlClient.MySqlDataAdapter(cmd);
-                    var dataTable = new System.Data.DataTable(); // Tworzenie DataTable do przechowywania wyników zapytania
+                    var dataTable = new System.Data.DataTable();
                     adapter.Fill(dataTable); // Wypełnienie DataTable danymi z bazy
 
                     TransactionView.AutoGenerateColumns = true; // Automatyczne generowanie kolumn w DataGridView
@@ -100,31 +122,53 @@ namespace BankApp
             }
         }
 
-        private void LoadTransferHistory() // Metoda do wczytywania historii przelewów
+        private void LoadTransferHistory(string amountFilter, string dateFilter) // Metoda do wczytywania historii przelewów
         {
+            amountFilter = amountFilter.Trim(); // Usunięcie białych znaków z początku i końca filtru kwoty
+            dateFilter = dateFilter.Trim(); // Usunięcie białych znaków z początku i końca filtru daty
             using (var conn = DatabaseContex.GetConnection())
             {
                 conn.Open();
                 string query = @"
-                    SELECT 
-                        sender.Username AS 'Od',
-                        receiver.Username AS 'Do',
-                        tr.Title AS 'Tytuł',
-                        tr.Amount AS 'Kwota',
-                        tr.transfer_date AS 'Data'
-                    FROM transfers tr
-                    JOIN accounts sa ON tr.send_account = sa.Id
-                    JOIN users sender ON sa.UserId = sender.Id
-                    JOIN accounts ca ON tr.claim_account = ca.Id
-                    JOIN users receiver ON ca.UserId = receiver.Id
-                    WHERE sa.UserId = @id OR ca.UserId = @id
-                    ORDER BY tr.transfer_date DESC"; // Zapytanie SQL do bazy o historię przelewów
+                        SELECT 
+                            sender.Username AS 'Od',
+                            receiver.Username AS 'Do',
+                            tr.Title AS 'Tytuł',
+                            tr.Amount AS 'Kwota',
+                            tr.transfer_date AS 'Data'
+                        FROM transfers tr
+                        JOIN accounts sa ON tr.send_account = sa.Id
+                        JOIN users sender ON sa.UserId = sender.Id
+                        JOIN accounts ca ON tr.claim_account = ca.Id
+                        JOIN users receiver ON ca.UserId = receiver.Id
+                        WHERE (sa.UserId = @id OR ca.UserId = @id)";
+
+                if (!string.IsNullOrEmpty(amountFilter))
+                {
+                    query += " AND tr.Amount = @amount";
+                }
+                if (!string.IsNullOrEmpty(dateFilter))
+                {
+                    query += " AND DATE(tr.transfer_date) = @date";
+                }
+
+                query += " ORDER BY tr.transfer_date DESC";
 
                 using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", _id); // Dodawanie parametru do zapytania
+                    cmd.Parameters.AddWithValue("@id", _id);
+
+                    if (!string.IsNullOrEmpty(amountFilter))
+                    {
+                        cmd.Parameters.AddWithValue("@amount", decimal.Parse(amountFilter));
+                    }
+                    if (!string.IsNullOrEmpty(dateFilter))
+                    {
+                        cmd.Parameters.AddWithValue("@date", dateFilter);
+                    }
+
                     var adapter = new MySql.Data.MySqlClient.MySqlDataAdapter(cmd);
-                    var dataTable = new System.Data.DataTable(); // Tworzenie DataTable do przechowywania wyników zapytania
+                    var dataTable = new System.Data.DataTable();
                     adapter.Fill(dataTable); // Wypełnienie DataTable danymi z bazy
                     TransactionView.AutoGenerateColumns = true; // Automatyczne generowanie kolumn w DataGridView
                     TransferView.DataSource = dataTable; // Ustawienie DataSource dla DataGridView
@@ -156,20 +200,24 @@ namespace BankApp
 
         private void MainAButton_Click(object sender, EventArgs e)
         {
+            string amountFilter = AmountFiltr.Text.Trim(); // Pobranie wartości filtru kwoty
+            string dateFilter = DateFiltr.Text.Trim(); // Pobranie wartości filtru daty
             LoadMainAccountData(); // Ponowne wczytanie danych konta głównego po kliknięciu przycisku
             MainAButton.BackColor = System.Drawing.Color.LightGreen; // Zmiana koloru przycisku na zielony po kliknięciu
             SavingAButton.BackColor = System.Drawing.Color.LightGray; // Przywrócenie koloru przycisku konta oszczędnościowego na szary
-            LoadTransactionHistory(); // Wczytanie historii transakcji po kliknięciu przycisku
-            LoadTransferHistory(); // Wczytanie historii przelewów po kliknięciu przycisku
+            LoadTransactionHistory(amountFilter, dateFilter); // Wczytanie historii transakcji po kliknięciu przycisku
+            LoadTransferHistory(amountFilter,dateFilter); // Wczytanie historii przelewów po kliknięciu przycisku
         }
 
         private void SavingAButton_Click(object sender, EventArgs e)
         {
+            string amountFilter = AmountFiltr.Text.Trim(); // Pobranie wartości filtru kwoty
+            string dateFilter = DateFiltr.Text.Trim(); // Pobranie wartości filtru daty
             LoadSavingAccountData(); // Ponowne wczytanie danych konta oszczędnościowego po kliknięciu przycisku
             SavingAButton.BackColor = System.Drawing.Color.LightGreen; // Zmiana koloru przycisku na zielony po kliknięciu
             MainAButton.BackColor = System.Drawing.Color.LightGray; // Przywrócenie koloru przycisku konta głównego na szary
-            LoadTransactionHistory(); // Wczytanie historii transakcji po kliknięciu przycisku
-            LoadTransferHistory(); // Wczytanie historii przelewów po kliknięciu przycisku
+            LoadTransactionHistory(amountFilter, dateFilter); // Wczytanie historii transakcji po kliknięciu przycisku
+            LoadTransferHistory(amountFilter, dateFilter); // Wczytanie historii przelewów po kliknięciu przycisku
         }
 
         private void LogOutBtn_Click(object sender, EventArgs e)
@@ -206,6 +254,38 @@ namespace BankApp
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
+
+        private void FiltrBtn_Click(object sender, EventArgs e)
+        {
+            string amountFilter = AmountFiltr.Text.Trim(); // Pobranie wartości filtru kwoty
+            string dateFilter = DateFiltr.Text.Trim(); // Pobranie wartości filtru daty
+
+            if (!string.IsNullOrEmpty(dateFilter) && !DateTime.TryParse(dateFilter, out _)) // Sprawdzenie poprawności formatu daty
+            {
+                MessageBox.Show("Nieprawidłowy format daty. Użyj formatu RRRR-MM-DD."); // Komunikat o błędzie formatu daty
+                return; // Zakończenie działania metody, jeśli format daty jest niepoprawny
+            }
+            LoadTransactionHistory(amountFilter, dateFilter);
+            LoadTransferHistory(amountFilter, dateFilter);
+        }
+
+        private void ResetBtn_Click(object sender, EventArgs e)
+        {
+            AmountFiltr.Text = "";
+            DateFiltr.Text = "";
+            LoadTransactionHistory("", "");
+            LoadTransferHistory("", "");
+        }
+
+        private void AmountFiltr_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DateFiltr_TextChanged(object sender, EventArgs e)
         {
 
         }
