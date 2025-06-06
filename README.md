@@ -171,27 +171,36 @@ Po wprowadzeniu jednej z dwóch opcji logowania, program powiadomi nas o pomyśl
 
    Pozwalają one na podgląd aktualnego salda zaznaczonego konta, aktualizowanego po każdej operacji na nim przeprowadzonej. Po prawej stronie znajduje się również przycisk odpowiadający za otwarcie konta oszczędnościowego w sytuacji gdy użytkownik jeszcze go nie posiada. Po założeniu przycisk jest niemożliwy do użycia.
 
-2. **Wpłata środków** - przycisk "Wpłata środków" - przekierowuje do formularza wpłaty pieniędzy
+2. **Otwarcie konta oszczędnościowego**  - przycisk "Dodaj konto oszczednościowe"
+ 
+    ![image](https://github.com/user-attachments/assets/dc8f028f-409c-4a8e-8959-bb9e9dff8d6b)
+   
+    Nowo zarejestrowani i zalogowani użytkownicy mają możliwość założenia sobie konta oszczednościowego poprzez odpowieni, przycisk na panelu głównym. Zostaną przeniesieni na specjalny panel w którym będą w stanie wygenerować sobie numer danego konta, potwierdzony komunikatem. Od tej chwili aktywuje się również autooszczedzanie i możliwość podglądu stanu salda na nowym kocie.
+
+5. **Wpłata środków** - przycisk "Wpłata środków" - przekierowuje do formularza wpłaty pieniędzy
    
    ![image](https://github.com/user-attachments/assets/b081bdc6-e286-4739-be72-daf79baabb28)
 
    Formularz ten pozwala nam na wpłacenie określonej kwoty na konto główne z podanie z jakiego źródła otrzymaliśmy wpłatę (wpłata, wpłata w bankomacie). Dodanie pieniędzy na konto główne uruchamia system autooszczedzania dodający 10% od wpłaty do konta oszczędnościowego.
     
-3. **Wypłata środków** - przycisk "Wypłata środków" - przekierowuje do formularza wypłaty pieniędzy
+6. **Wypłata środków** - przycisk "Wypłata środków" - przekierowuje do formularza wypłaty pieniędzy
    
    ![image](https://github.com/user-attachments/assets/26a56170-da75-49f5-ba61-9fb64999b1de) ![image](https://github.com/user-attachments/assets/c085e310-e427-43f4-8868-a718ec4af74b)
    
    Formularz wypłat działa bardzo podobnie co system wpłat. Tutaj pozbywamy się pieniędzy z konta. W sytuacji gdy wybierzemy konto oszczednościowe, jako to z którego chcemy wypłacić pieniądze, pojawia nam się opcja z kontem głównym. Wypłacanie oszczędności jest możliwe tylko na konto główne. W tym przypadku również możemy wybrać rodzaj transakcji oraz ilość gotówki jaką chcemy wypłacić.
 
-4. **Przelewy** - przycisk "Przelew" - przekierowuje do formularza wykonywania przelewów między kontami
+7. **Przelewy** - przycisk "Przelew" - przekierowuje do formularza wykonywania przelewów między kontami
    ![image](https://github.com/user-attachments/assets/9524e87b-c764-4792-8827-802784f7b643)
 
    Formularz przelewów zajmuje się wykonywaniem przelewów pomiędzy kontami użytkowników. Ich wybór jest możliwy w dwóch pierwszych OptionBox'ach. W opcjach widoczne są konta zapisane jako "Typ konta", "Numer konta", "Balans". Idąc dalej należy wpisać kwotę przelewu oraz tytuł/opis.
    
-5. **Historia** - karty "Przelewy" i "Transakcje" - przedstawia ostatnie działania na koncie
+8. **Historia** - karty "Przelewy" i "Transakcje" - przedstawia ostatnie działania na koncie
     ![image](https://github.com/user-attachments/assets/845b2ac9-993d-4d0f-8dfa-3a85a3377e16)
 
    Ten fragment panelu głównego odpowiada za wyświetlanie wszystkcich operacji na koncie, czyli modyfikacji sald kont użytkownika. W sytuscji gdy wpłacimy/wypłacimy pieniądze lub wykonamy przelew zostanie on zarejestrowany na kartach historii działań na koncie, wraz z szczegółami transakcji.
+
+    ![image](https://github.com/user-attachments/assets/39389fab-1571-4558-af01-1e3bd042591b)
+   Zaimplementowane zostało również filtrowanie przelewów oraz transakcji na podstawie podanej daty lub kwoty przelewu. Użytkownik może wyświetlić operacje tylko z podanymi kryteriami po użyciu przycisku "Filtruj". Jest też opcja wyczyszczenia wyników poprzez "Resetuj" co przywróci pierwotny stan historii.
 
 ### Funkcje specjalne
 - **Autooszczędzanie** - 10% każdej wpłaty trafia na konto oszczędnościowe
